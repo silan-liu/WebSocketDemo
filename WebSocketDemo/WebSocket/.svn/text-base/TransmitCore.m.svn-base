@@ -1,0 +1,147 @@
+//
+//  TransmitCore.m
+//  YYMobileCore
+//
+//  Created by liusilan on 2017/4/12.
+//  Copyright © 2017年 YY.inc. All rights reserved.
+//
+
+#import "TransmitCore.h"
+#import "IProtoSDKMgr.h"
+#import "ProtoSDKMgr.h"
+#import "ProtoSDKNotification.h"
+#import "ChannelCore.h"
+
+@interface TransmitCore ()
+
+@property (nonatomic, strong) NSMutableArray *pendingRequests;
+@property (nonatomic, strong) id<IProtoSDKSvc> iSvc;
+@property (nonatomic, assign) int currentServiceState;
+
+@end
+
+@implementation TransmitCore
+
+- (id)init {
+    if (self = [super init]) {
+        _iSvc= [[ProtoSDKMgr Instance] getSvc];
+        _currentServiceState = kSerivceChannelStateInit;
+
+        [self initNotifitions];
+    }
+    
+    return self;
+}
+
+- (void)sendData:(NSData *)data toApp:(uint32_t)appId
+{
+    if (!data) {
+        return;
+    }
+    
+    // 透传通道没建立, 这里是不发包的, 包所有的数据包都缓存起来, 等透传通道建立好了一一发送.
+    if (_currentServiceState != kSerivceChannelStateReady) {
+        
+        SeriveTransmitData *reqest = [[SeriveTransmitData alloc] init];
+        reqest.data = data;
+        reqest.svcType = appId;
+        
+        @synchronized(self.pendingRequests) {
+            if (reqest) {
+                [self.pendingRequests addObject:reqest];
+            }
+        }
+        
+        return;
+    }
+    
+    [self _sendServiceData:data withAppId:appId];
+}
+
+- (void)_sendServiceData:(NSData *)data withAppId:(int)appid
+{
+    id<IChannelCore> channel = GetCoreI(IChannelCore);
+    uint32_t topSid;
+    
+    if(channel.channelState == In_Channel)
+    {
+        ChannelDetailInfo *info = channel.currentChannelInfo;
+        if (info != nil)
+        {
+            topSid = info.topSid;
+        } else {
+            topSid = 0;
+        }
+    } else {
+        topSid = 0;
+    }
+    
+    int result = [self.iSvc sendSvcData:topSid svcType:appid svcData:data];
+    NSLog(@"%d", result);
+    LogInfo(@"TransmitCore", @"_sendServiceData result:%d,appId:%d", result);
+
+}
+
+- (void)subscribeApp:(NSArray *)appids
+{
+    int result = [self.iSvc subscribeApp:appids];
+    if (result != 0) {
+        LogInfo(@"TransmitCore", @"subscribeApp Failed");
+    }
+}
+
+- (void)unSubscribeApp:(NSArray *)appids {
+    int result = [self.iSvc cancelSubscribeApp:appids];
+    if (result != 0) {
+        LogInfo(@"TransmitCore", @"cancelSubscribeApp Failed");
+    }
+}
+
+- (void)initNotifitions
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(onServiceStateChangeNotifcation:) name:kServiceStateNotifcation object:nil];
+}
+
+- (void)onServiceStateChangeNotifcation:(NSNotification *)notification
+{
+    int serviceState = [notification.userInfo[kServiceStateNotifcationUserInfoKey] intValue];
+    
+    self.currentServiceState = serviceState;
+    
+    if(serviceState == kSerivceChannelStateReady)
+    {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (self.currentServiceState == kSerivceChannelStateReady && self.pendingRequests.count > 0) {
+                
+                [YYLogger info:@"TransmiteCore" message:@"Service Ready, send pending requests."];
+
+                [self doPendingRequests];
+            }
+        });
+    }
+}
+
+- (void)doPendingRequests {
+    @synchronized(self.pendingRequests) {
+        [YYLogger info:@"TransmiteCore" message:@"%@ pending packges/data will be sent.", @(self.pendingRequests.count)];
+        [self.pendingRequests enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([obj isKindOfClass:[SeriveTransmitData class]]) {
+                SeriveTransmitData *request = obj;
+                
+                [self _sendServiceData:request.data withAppId:request.svcType];
+            }
+        }];
+         
+        [self.pendingRequests removeAllObjects];
+    }
+}
+
+- (NSMutableArray *)pendingRequests {
+    if (_pendingRequests == nil) {
+        _pendingRequests = [NSMutableArray array];
+    }
+    return _pendingRequests;
+}
+
+@end

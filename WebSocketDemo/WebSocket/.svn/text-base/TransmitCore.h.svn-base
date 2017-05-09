@@ -1,0 +1,17 @@
+//
+//  TransmitCore.h
+//  YYMobileCore
+//
+//  Created by liusilan on 2017/4/12.
+//  Copyright © 2017年 YY.inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+@interface TransmitCore : NSObject
+
+- (void)sendData:(NSData *)data toApp:(uint32_t)appId;
+- (void)subscribeApp:(NSArray *)appids;
+- (void)unSubscribeApp:(NSArray *)appids;
+
+@end

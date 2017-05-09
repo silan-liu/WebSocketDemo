@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<style>
+		pre {font-size: 5px; height: 120px;}
+	</style>
+	<script src="jquery-1.9.0.min.js"></script>
+    <script src="//cdn.rawgit.com/dcodeIO/protobuf.js/6.X.X/dist/protobuf.js"></script>
+	<script type="text/javascript">
+
+	$(function() {
+      
+      var reconnectAttempts = 0;
+      var reConnnectTimeInterval = [1, 2, 4]
+      
+      function connect() {
+      
+          var websocket = new WebSocket('ws://127.0.0.1:12345/service');
+          websocket.binaryType = 'arraybuffer';
+          
+          websocket.onopen = function () {
+          reconnectAttempts = 0;
+          console.log("socket opened");
+          $('h2').css('color', 'green');
+            sendHeartBeat();
+          };
+          
+          websocket.onerror = function () {
+          $('h2').css('color', 'red');
+          };
+          
+          websocket.onclose = function() {
+            $('h2').css('color', 'gray');
+            reConnect()
+          }
+          
+          websocket.onmessage = function (message) {
+              var data = message.data;
+              if (data instanceof ArrayBuffer) {
+              
+                  var headerLen = 4
+                  var buf = data.slice(0, headerLen);
+                  
+                  var dv = new DataView(buf, 0);
+      
+                var appId = dv.getUint32(0,true);
+                  
+                  var len = data.byteLength
+                  var buf3 = data.slice(headerLen, len)
+                  
+              }
+          };
+      };
+      
+      // 重连
+      function reConnect() {
+        reconnectAttempts++;
+        if (reconnectAttempts > 3) {
+            return;
+        }
+      
+        var timeOut = reConnnectTimeInterval[reconnectAttempts - 1];
+
+        setTimeout(function() {
+                   connect();
+                 }, timeOut)
+      }
+      
+      var timeIntervalID;
+      
+      function sendHeartBeat() {
+          if (timeIntervalID) {
+            clearInterval(timeIntervalID);
+          }
+        timeIntervalID = window.setInterval(function() {
+                                          if (websocket) {
+                                            websocket.send(JSON.stringify({
+                                                            'messageType': 'heartBeat'}));
+                                          }
+                                }, 5000);
+      }
+      
+      function subscribeAppId() {
+          var params = JSON.stringify({
+                                      'messageType': 'subscribeAppId',
+                                      'body': [60035]});
+          console.log(params);
+          websocket.send(params);
+      }
+		
+		$('button').click(function(e) {
+			e.preventDefault();
+          websocket.send(JSON.stringify({
+                                        'messageType': 'echo',
+                                        'text': $('input').val()
+                                        }));
+		});
+      
+        connect()
+	});
+	</script>
+</head>
+
+
+<body>
+	<h2>WebSockets echo client with push support</h2>
+	<form>
+		<input type="text" placeholder="message to be echoed"/>
+		<button>Send</button>
+	</form>
+	<h4>Echo result :</h4>
+	<p></p>
+	<h4>Pushed messages :</h4>
+	<pre></pre>
+</body>
+</html>

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/yy-music/!svn/ver/561353/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket
+END
+MyHTTPConnection.m
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/yy-music/!svn/ver/561353/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/MyHTTPConnection.m
+END
+TransmitCore.h
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/yy-music/!svn/ver/560863/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/TransmitCore.h
+END
+MyWebSocket.h
+K 25
+svn:wc:ra_dav:version-url
+V 138
+/yy-music/!svn/ver/560249/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/MyWebSocket.h
+END
+MyWebSocket.mm
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/yy-music/!svn/ver/561353/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/MyWebSocket.mm
+END
+TransmitCore.m
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/yy-music/!svn/ver/560918/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/TransmitCore.m
+END
+WebSocketManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/yy-music/!svn/ver/560336/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/WebSocketManager.h
+END
+MyHTTPConnection.h
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/yy-music/!svn/ver/560249/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/MyHTTPConnection.h
+END
+WebSocketManager.m
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/yy-music/!svn/ver/561353/mobile/entmobile/ios/branches/entmobile-ios_rn_werwolf_feature/YYMobileCore/YYMobileCore/WebSocket/WebSocketManager.m
+END
